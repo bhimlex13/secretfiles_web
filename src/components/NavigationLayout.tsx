@@ -3,7 +3,7 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { PenTool, Bookmark, LogOut, Moon, Sun, Ghost, Home, UserCircle } from 'lucide-react';
+import { PenTool, Bookmark, LogOut, Moon, Sun, Ghost, Home, UserCircle, Library } from 'lucide-react';
 
 const ThemeContext = createContext({ isMidnight: false, toggleTheme: () => {} });
 export const useTheme = () => useContext(ThemeContext);
@@ -13,6 +13,9 @@ export default function NavigationLayout({ children }: { children: React.ReactNo
   const router = useRouter();
   const [isMidnight, setIsMidnight] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string } | null>(null);
+  
+  // Hydration fix state
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const user = localStorage.getItem('user');
@@ -23,6 +26,9 @@ export default function NavigationLayout({ children }: { children: React.ReactNo
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'midnight') setIsMidnight(true);
+    
+    // Tell Next.js we have finished loading the theme and it is safe to render
+    setMounted(true);
   }, []);
 
   const toggleTheme = () => {
@@ -44,13 +50,16 @@ export default function NavigationLayout({ children }: { children: React.ReactNo
     return <>{children}</>;
   }
 
+  // Prevents the Hydration mismatch error by waiting for the client to mount
+  if (!mounted) {
+    return null;
+  }
+
   return (
     <ThemeContext.Provider value={{ isMidnight, toggleTheme }}>
       <div className={`${isMidnight ? 'dark' : ''}`}>
-        {/* Deep pitch black background for the main app wrapper */}
         <div className="flex min-h-screen bg-[#FDFCF8] dark:bg-zinc-950 text-slate-800 dark:text-zinc-300 transition-colors duration-1000 font-serif selection:bg-slate-200 dark:selection:bg-red-900/30">
 
-          {/* Left Sidebar with faint red borders */}
           <aside className="w-20 lg:w-64 fixed h-screen border-r border-[#E5E5E0] dark:border-red-950/50 bg-[#FDFCF8]/95 dark:bg-black/95 backdrop-blur-md flex flex-col justify-between py-8 px-4 lg:px-8 z-50 transition-colors duration-1000">
             <div>
               <Link href="/" className="flex items-center gap-3 mb-16">
@@ -68,6 +77,9 @@ export default function NavigationLayout({ children }: { children: React.ReactNo
                   <>
                     <Link href="/bookmarks" className={`flex items-center gap-4 text-sm transition-colors ${pathname === '/bookmarks' ? 'text-slate-900 dark:text-red-500 font-bold' : 'text-slate-500 hover:text-slate-800 dark:text-zinc-500 dark:hover:text-red-400'}`}>
                       <Bookmark className="w-5 h-5" /> <span className="hidden lg:block tracking-wide">Saved</span>
+                    </Link>
+                    <Link href="/library" className={`flex items-center gap-4 text-sm transition-colors ${pathname === '/library' ? 'text-slate-900 dark:text-red-500 font-bold' : 'text-slate-500 hover:text-slate-800 dark:text-zinc-500 dark:hover:text-red-400'}`}>
+                      <Library className="w-5 h-5" /> <span className="hidden lg:block tracking-wide">My Library</span>
                     </Link>
                     <Link href={`/profile/${currentUser.username}`} className={`flex items-center gap-4 text-sm transition-colors ${pathname.startsWith('/profile') ? 'text-slate-900 dark:text-red-500 font-bold' : 'text-slate-500 hover:text-slate-800 dark:text-zinc-500 dark:hover:text-red-400'}`}>
                       <UserCircle className="w-5 h-5" /> <span className="hidden lg:block tracking-wide">Profile</span>

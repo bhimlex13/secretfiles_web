@@ -96,22 +96,19 @@ export default function ProfilePage() {
   const isOwnProfile = currentUser?.username === username;
 
   return (
-    <div className="py-12 px-4 md:px-12 max-w-4xl mx-auto">
+    <div className="py-12 px-4 md:px-12 max-w-6xl mx-auto">
       
-      <div className="mb-6">
+      <div className="mb-6 max-w-4xl mx-auto">
         <Link href="/" className="inline-flex items-center gap-2 text-slate-500 dark:text-zinc-500 hover:text-slate-800 dark:hover:text-red-500 transition-colors font-serif italic">
           <ArrowLeft className="w-4 h-4" /> Back to entries
         </Link>
       </div>
 
-      {/* Eerie Dark Mode Container: Pitch black with a faint red border */}
-      <div className="w-full bg-white dark:bg-zinc-950 shadow-sm relative overflow-hidden border border-[#E5E5E0] dark:border-red-950/50 min-h-[80vh] transition-colors duration-1000">
-        
-        <div className="absolute left-10 md:left-16 top-0 bottom-0 w-px bg-red-200 dark:bg-red-900/20 z-0"></div>
-
-        <div className="relative z-10 pl-16 md:pl-24 pr-8 md:pr-12 py-12">
+      {/* FIXED: Removed min-h-[80vh] and changed py to make it wrap tightly */}
+      <div className="w-full bg-white dark:bg-zinc-950 shadow-sm relative overflow-hidden border border-[#E5E5E0] dark:border-red-950/50 transition-colors duration-1000 max-w-4xl mx-auto mb-12">
+        <div className="relative z-10 px-8 md:px-16 py-8">
           
-          <header className="mb-12 border-b border-slate-100 dark:border-red-950/50 pb-8 flex justify-between items-start">
+          <header className="mb-8 border-b border-slate-100 dark:border-red-950/50 pb-6 flex justify-between items-start">
             <div>
               <h1 className="text-4xl font-bold text-slate-900 dark:text-red-50 mb-2 font-serif">{profileData.username}'s Journal</h1>
               <div className="flex gap-4 text-slate-500 dark:text-zinc-500 font-serif italic text-sm">
@@ -137,42 +134,66 @@ export default function ProfilePage() {
               </button>
             )}
           </header>
-
-          <div className="space-y-12">
-            <h2 className="text-2xl font-serif text-slate-800 dark:text-red-900 mb-6 italic">Public Entries</h2>
-            
-            {posts.length === 0 ? (
-              <p className="text-slate-500 dark:text-zinc-600 font-serif italic">This author has not published any public entries yet.</p>
-            ) : (
-              posts.map((post) => {
-                const plainTextSnippet = getCleanSnippet(post.content);
-
-                return (
-                  // Eerie Hover Effect: Deep black card that glows faint red on hover
-                  <article key={post._id} className="group border border-slate-100 dark:border-red-950/30 p-6 bg-[#FDFCF8] dark:bg-black hover:shadow-md dark:hover:shadow-[0_0_20px_rgba(153,27,27,0.1)] transition-all duration-500">
-                    <Link href={`/entry/${post._id}`}>
-                      <h3 className="text-2xl font-bold text-slate-900 dark:text-red-100 mb-2 font-serif group-hover:underline decoration-slate-300 dark:decoration-red-900/50 break-words">{post.title}</h3>
-                    </Link>
-                    <time className="text-xs text-slate-400 dark:text-zinc-600 italic font-serif block mb-4">
-                      {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                    </time>
-                    <div className="prose prose-slate dark:prose-invert mb-2 leading-relaxed">
-                      <p className="font-serif text-slate-600 dark:text-zinc-400 line-clamp-4 break-words">
-                        {plainTextSnippet}
-                      </p>
-                    </div>
-                    
-                    <Link href={`/entry/${post._id}`} className="inline-block text-sm font-serif italic text-slate-500 dark:text-red-800 hover:text-slate-800 dark:hover:text-red-500 transition-colors underline decoration-slate-300 dark:decoration-red-900/30 underline-offset-4 mt-2">
-                      Read full entry...
-                    </Link>
-                  </article>
-                );
-              })
-            )}
-          </div>
+          
+          <h2 className="text-2xl font-serif text-slate-800 dark:text-red-900 italic">Public Entries</h2>
+          
+          {posts.length === 0 && (
+            <p className="text-slate-500 dark:text-zinc-600 font-serif italic mt-4">This author has not published any public entries yet.</p>
+          )}
 
         </div>
       </div>
+
+      {posts.length > 0 && (
+        <div className="columns-1 lg:columns-2 gap-12 lg:gap-16">
+          {posts.map((post: any) => {
+            const plainTextSnippet = getCleanSnippet(post.content);
+
+            return (
+              <article key={post._id} className="break-inside-avoid mb-12 relative group bg-[#FDFCF8] dark:bg-zinc-950 p-8 rounded-r-2xl rounded-l-md border-y border-r border-[#E5E5E0] dark:border-red-950/30 border-l-[16px] border-l-slate-800 dark:border-l-red-950 shadow-md hover:shadow-xl dark:hover:shadow-[0_0_25px_rgba(153,27,27,0.15)] hover:-translate-y-1 transition-all duration-500 min-h-[300px] flex flex-col justify-between">
+                
+                <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-r from-black/10 to-transparent dark:from-black/40 z-0"></div>
+                
+                <div className="relative z-10 flex-grow flex flex-col">
+                  <header className="mb-6 pr-8">
+                    <Link href={`/entry/${post._id}`}>
+                      <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-red-100 mb-3 leading-snug hover:underline decoration-slate-300 dark:decoration-red-900/50 break-words font-serif">{post.title}</h2>
+                    </Link>
+                    <div className="flex flex-col gap-1 text-sm text-slate-500 dark:text-zinc-500 italic font-serif">
+                      <time className="text-xs">{new Date(post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</time>
+                      {post.editedAt && (
+                        <span className="text-xs opacity-70">(Edited)</span>
+                      )}
+                    </div>
+                  </header>
+                  
+                  <div className="prose prose-slate dark:prose-invert mb-6 leading-relaxed flex-grow">
+                    <p className="line-clamp-4 text-slate-600 dark:text-zinc-400 break-words font-serif">
+                      {plainTextSnippet}
+                    </p>
+                  </div>
+
+                  <div>
+                    <Link href={`/entry/${post._id}`} className="inline-block mb-6 text-sm font-serif italic text-slate-500 dark:text-red-800 hover:text-slate-800 dark:hover:text-red-500 transition-colors underline decoration-slate-300 dark:decoration-red-900/30 underline-offset-4 mt-2">
+                      Open book...
+                    </Link>
+
+                    {post.tags && post.tags.length > 0 && (
+                      <div className="flex gap-2 flex-wrap mt-auto">
+                        {post.tags.map((tag: string, index: number) => (
+                          <span key={index} className="text-xs text-slate-500 dark:text-zinc-600 border border-slate-200 dark:border-red-950/30 px-2 py-1 rounded-sm font-serif">
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
