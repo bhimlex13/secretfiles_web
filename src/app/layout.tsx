@@ -1,13 +1,12 @@
-// src/app/layout.tsx
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Navbar from "../components/Navbar";
+import NavigationLayout from "../components/NavigationLayout";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Secret Files",
-  description: "Share and discover anonymous stories safely.",
+  title: "Dear Stranger",
+  description: "A safe space to share your thoughts and read others.",
 };
 
 export default function RootLayout({
@@ -17,11 +16,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-slate-50 min-h-screen text-slate-900`}>
-        <Navbar />
-        <main className="container mx-auto px-4 md:px-8 py-8">
+      <body className={inter.className}>
+        <NavigationLayout>
           {children}
-        </main>
+        </NavigationLayout>
       </body>
     </html>
   );
