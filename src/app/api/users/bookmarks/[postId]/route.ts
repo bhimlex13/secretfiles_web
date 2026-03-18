@@ -3,10 +3,15 @@ import jwt from 'jsonwebtoken';
 import connectDB from '../../../../../lib/mongodb';
 import User from '../../../../../models/User';
 
-export async function POST(req: Request, { params }: { params: { postId: string } }) {
+// Change the second argument to 'context: any'
+export async function POST(req: Request, context: any) {
   try {
     await connectDB();
     
+    // IMPORTANT: Await params for Next.js 16 compatibility
+    const params = await context.params;
+    const { postId } = params;
+
     const authHeader = req.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ message: 'Not authorized' }, { status: 401 });
@@ -20,14 +25,13 @@ export async function POST(req: Request, { params }: { params: { postId: string 
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
     }
 
-    const isBookmarked = user.bookmarks.includes(params.postId);
+    // Use the awaited postId
+    const isBookmarked = user.bookmarks.includes(postId);
 
     if (isBookmarked) {
-      // Remove bookmark
-      user.bookmarks = user.bookmarks.filter((id: any) => id.toString() !== params.postId);
+      user.bookmarks = user.bookmarks.filter((id: any) => id.toString() !== postId);
     } else {
-      // Add bookmark
-      user.bookmarks.push(params.postId);
+      user.bookmarks.push(postId);
     }
 
     await user.save();

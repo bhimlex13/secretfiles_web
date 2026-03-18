@@ -3,10 +3,15 @@ import jwt from 'jsonwebtoken';
 import connectDB from '../../../../../lib/mongodb';
 import User from '../../../../../models/User';
 
-export async function POST(req: Request, { params }: { params: { username: string } }) {
+// Change the second argument to 'context: any' to handle async params
+export async function POST(req: Request, context: any) {
   try {
     await connectDB();
     
+    // IMPORTANT: Await params for Next.js 16 compatibility
+    const params = await context.params;
+    const { username } = params;
+
     const authHeader = req.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ message: 'Not authorized' }, { status: 401 });
@@ -15,7 +20,8 @@ export async function POST(req: Request, { params }: { params: { username: strin
     const token = authHeader.split(' ')[1];
     const decoded: any = jwt.verify(token, process.env.JWT_SECRET as string);
 
-    const targetUser = await User.findOne({ username: params.username });
+    // Use the awaited username from params
+    const targetUser = await User.findOne({ username });
     const currentUser = await User.findById(decoded.id);
 
     if (!targetUser || !currentUser) {

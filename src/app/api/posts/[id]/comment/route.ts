@@ -2,14 +2,13 @@ import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import connectDB from '../../../../../lib/mongodb';
 import Post from '../../../../../models/Post';
-import User from '../../../../../models/User';
+import User from '../../../../../models/User'; // Ensure this is imported
 
-// Change context: any and await the params
 export async function POST(req: Request, context: any) {
   try {
     await connectDB();
     
-    // Await params before accessing id
+    // 1. Await params for Next.js 16
     const params = await context.params;
     const postId = params.id;
 
@@ -22,18 +21,25 @@ export async function POST(req: Request, context: any) {
     const decoded: any = jwt.verify(token, process.env.JWT_SECRET as string);
 
     const { text } = await req.json();
-    const post = await Post.findById(postId); // Use the awaited postId
+    
+    // 2. Fetch the post
+    const post = await Post.findById(postId);
 
     if (!post) {
       return NextResponse.json({ message: 'Entry not found' }, { status: 404 });
     }
 
+    // 3. Add comment and save
     post.comments.push({ user: decoded.id, text });
     await post.save();
-    await post.populate('comments.user', 'username');
+    
+    // 4. Populate with the User model explicitly registered
+    // We pass 'User' as the model to be safe
+    await post.populate({ path: 'comments.user', select: 'username', model: User });
 
     return NextResponse.json(post.comments, { status: 201 });
   } catch (error: any) {
+    console.error("Comment API Error:", error);
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }
