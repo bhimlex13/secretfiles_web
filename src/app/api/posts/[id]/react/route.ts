@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import connectDB from '../../../../../../lib/mongodb'; // Counted dots based on [id]/react folder
-import Post from '../../../../../../models/Post';
+import connectDB from '../../../../../lib/mongodb'; // Counted dots based on [id]/react folder
+import Post from '../../../../../models/Post';
 
 // 1. We change the signature to 'context: any' to satisfy the Next.js 16 build constraint
 export async function POST(req: Request, context: any) {
