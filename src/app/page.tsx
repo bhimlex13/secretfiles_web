@@ -40,14 +40,23 @@ export default function Home() {
     fetchPosts();
   }, []);
 
-  const fetchPosts = async () => {
+const fetchPosts = async () => {
     try {
+      console.log("Fetching posts from:", `${process.env.NEXT_PUBLIC_API_URL}/posts`);
+      
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/posts`, { cache: 'no-store' });
-      if (!res.ok) throw new Error('Failed to fetch entries');
+      
+      if (!res.ok) {
+        // Capture the EXACT error from the Next.js API
+        const errorData = await res.json().catch(() => null);
+        console.error("Backend Error Details:", errorData);
+        throw new Error(errorData?.message || `Server responded with status: ${res.status}`);
+      }
+      
       const data = await res.json();
       setPosts(data);
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      console.error("Fetch Posts Crash:", error.message);
     } finally {
       setIsLoading(false);
     }

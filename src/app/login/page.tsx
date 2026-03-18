@@ -7,11 +7,18 @@ import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    identifier: '', // Replaced email with identifier
+    password: '',
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,26 +28,24 @@ export default function Login() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(formData),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || 'Login failed');
+        throw new Error(data.message || 'Invalid credentials');
       }
 
       localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify({
-        id: data.user.id,
-        username: data.user.username,
-        email: data.user.email
-      }));
-
+      localStorage.setItem('user', JSON.stringify(data.user));
+      
       toast.success('Welcome back to the archives.');
       router.push('/');
+
     } catch (err: any) {
-      toast.error(err.message);
+      console.error("Login Error:", err.message);
+      toast.error(err.message || 'Failed to enter the archives.');
     } finally {
       setIsLoading(false);
     }
@@ -61,14 +66,16 @@ export default function Login() {
           <div className="absolute left-6 top-0 bottom-0 w-px bg-red-200 z-0 transition-transform duration-700 hover:scale-y-110"></div>
 
           <form className="space-y-6 relative z-10 pl-6" onSubmit={handleSubmit}>
+            
             <div className="group">
-              <label className="block text-sm font-medium text-slate-700 italic transition-colors group-focus-within:text-slate-900">Email address</label>
+              <label className="block text-sm font-medium text-slate-700 italic transition-colors group-focus-within:text-slate-900">Email or Username</label>
               <div className="mt-1">
                 <input
-                  type="email"
+                  type="text"
+                  id="identifier"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={formData.identifier}
+                  onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 border-b border-slate-300 bg-transparent placeholder-slate-400 focus:outline-none focus:border-slate-800 transition-colors sm:text-sm"
                 />
               </div>
@@ -79,9 +86,10 @@ export default function Login() {
               <div className="mt-1 relative">
                 <input
                   type={showPassword ? "text" : "password"}
+                  id="password"
                   required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={formData.password}
+                  onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 border-b border-slate-300 bg-transparent placeholder-slate-400 focus:outline-none focus:border-slate-800 transition-colors sm:text-sm pr-10"
                 />
                 <button
@@ -103,16 +111,16 @@ export default function Login() {
               >
                 {isLoading ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /> Unlocking...</>
-                ) : 'Sign in'}
+                ) : 'Enter'}
               </button>
             </div>
           </form>
 
           <div className="mt-6 text-center relative z-10 pl-6">
             <p className="text-sm text-slate-500 italic">
-              New to the archives?{' '}
+              Don't have an identity yet?{' '}
               <Link href="/register" className="font-medium text-slate-800 hover:text-slate-600 underline decoration-slate-300 underline-offset-4 transition-colors">
-                Create an identity
+                Create one
               </Link>
             </p>
           </div>

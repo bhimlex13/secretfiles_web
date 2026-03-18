@@ -58,13 +58,17 @@ export default function Register() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || 'Registration failed');
+        throw new Error(data.message || 'Registration failed due to a server error.');
       }
 
       toast.success('Identity forged! Please check your email to verify your account.');
       setFormData({ username: '', email: '', password: '', confirmPassword: '', acceptTerms: false });
+      
+      // Optional: Redirect them to login after a few seconds
+      setTimeout(() => router.push('/login'), 3000);
 
     } catch (err: any) {
+      console.error("Registration Error:", err.message);
       toast.error(err.message || 'Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
@@ -163,7 +167,7 @@ export default function Register() {
               <div className="flex items-start gap-3">
                 <ShieldCheck className="w-5 h-5 text-slate-500 shrink-0 mt-0.5" />
                 <div className="text-xs text-slate-600 font-sans leading-relaxed">
-                  <strong>Our Privacy Promise:</strong> Your anonymity is our highest priority. Your password is cryptographically encrypted (meaning we can never see it), and your email is kept strictly confidential—only accessed if you explicitly request account assistance. Your secrets are safe behind the Veil.
+                  <strong>Our Privacy Promise:</strong> Your anonymity is our highest priority. Your password is cryptographically encrypted (meaning we can never see it), and your email is kept strictly confidential, only accessed if you explicitly request account assistance. Your secrets are safe behind the Veil.
                 </div>
               </div>
             </div>

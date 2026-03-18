@@ -56,8 +56,13 @@ export default function NavigationLayout({ children }: { children: React.ReactNo
     router.push('/login');
   };
 
-  if (pathname === '/login' || pathname === '/register') {
-    return <>{children}</>;
+if (pathname === '/login' || pathname === '/register') {
+    return (
+      <>
+        <Toaster position="bottom-right" />
+        {children}
+      </>
+    );
   }
 
   if (!mounted) {
