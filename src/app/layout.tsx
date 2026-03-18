@@ -5,8 +5,8 @@ import NavigationLayout from "../components/NavigationLayout";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Dear Stranger",
-  description: "A safe space to share your thoughts and read others.",
+  title: "Veil",
+  description: "Share your hidden truths and paranormal encounters.",
 };
 
 export default function RootLayout({

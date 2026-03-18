@@ -30,3 +30,13 @@ body {
 .dark .ql-snow .ql-stroke { stroke: #71717a; }
 .dark .ql-snow .ql-fill, .dark .ql-snow .ql-stroke.ql-fill { fill: #71717a; }
 .dark .ql-snow .ql-picker { color: #71717a; }
+
+/* --- Clean Entrance Animations --- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in-fast { animation: fadeIn 0.5s ease-out forwards; }
+.fade-in-mid { animation: fadeIn 0.8s ease-out forwards; }
+.fade-in-slow { animation: fadeIn 1.2s ease-out forwards; }

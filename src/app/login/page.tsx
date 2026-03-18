@@ -3,37 +3,25 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function Login() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
-  
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.id]: e.target.value
-    }));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setIsSubmitting(true);
+    setIsLoading(true);
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
@@ -42,84 +30,90 @@ export default function Login() {
         throw new Error(data.message || 'Login failed');
       }
 
-      // Save token and user info to the browser's local storage
       localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      
-      // Redirect to the main feed
+      localStorage.setItem('user', JSON.stringify({
+        id: data.user.id,
+        username: data.user.username,
+        email: data.user.email
+      }));
+
+      toast.success('Welcome back to the archives.');
       router.push('/');
-      
     } catch (err: any) {
-      setError(err.message || 'Invalid credentials. Please try again.');
+      toast.error(err.message);
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFCF8] flex items-center justify-center p-4">
-      {/* The Notebook Page Container */}
-      <div className="w-full max-w-md bg-white p-10 shadow-sm relative overflow-hidden border border-[#E5E5E0]">
-        
-        {/* The Notebook Margin Line */}
-        <div className="absolute left-8 top-0 bottom-0 w-px bg-red-200"></div>
+    <div className="min-h-screen bg-[#FDFCF8] flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-serif selection:bg-slate-200 transition-colors duration-1000">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center fade-in-fast">
+        <h1 className="text-4xl font-bold tracking-widest text-slate-900 uppercase">Veil</h1>
+        <h2 className="mt-4 text-center text-xl text-slate-600 italic">
+          Enter the archives.
+        </h2>
+      </div>
 
-        <div className="relative z-10 pl-4">
-          <div className="mb-10 text-center">
-            <h1 className="text-4xl font-serif text-slate-800 mb-2">Welcome Back,</h1>
-            <p className="text-slate-500 italic">Open your journal.</p>
-          </div>
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md fade-in-mid">
+        <div className="bg-white py-8 px-4 shadow-sm border border-[#E5E5E0] sm:px-10 relative overflow-hidden">
+          
+          <div className="absolute left-6 top-0 bottom-0 w-px bg-red-200 z-0 transition-transform duration-700 hover:scale-y-110"></div>
 
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 text-red-600 text-sm flex items-start gap-2 border-l-2 border-red-600">
-              <AlertCircle className="w-5 h-5 shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-8">
-            
-            <div className="space-y-1">
-              <input
-                type="email"
-                id="email"
-                required
-                placeholder="Email Address"
-                className="w-full py-2 bg-transparent border-b border-slate-300 focus:border-slate-800 outline-none transition-colors text-slate-800 placeholder:text-slate-400 font-serif text-lg"
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div className="space-y-1">
-              <input
-                type="password"
-                id="password"
-                required
-                placeholder="Password"
-                className="w-full py-2 bg-transparent border-b border-slate-300 focus:border-slate-800 outline-none transition-colors text-slate-800 placeholder:text-slate-400 font-serif text-lg"
-                value={formData.password}
-                onChange={handleChange}
-              />
-              <div className="flex justify-end pt-2">
-                <Link href="/forgot-password" className="text-sm text-slate-500 hover:text-slate-800 italic">
-                  Forgot your password?
-                </Link>
+          <form className="space-y-6 relative z-10 pl-6" onSubmit={handleSubmit}>
+            <div className="group">
+              <label className="block text-sm font-medium text-slate-700 italic transition-colors group-focus-within:text-slate-900">Email address</label>
+              <div className="mt-1">
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="appearance-none block w-full px-3 py-2 border-b border-slate-300 bg-transparent placeholder-slate-400 focus:outline-none focus:border-slate-800 transition-colors sm:text-sm"
+                />
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full mt-4 bg-slate-800 text-[#FDFCF8] py-3 font-serif tracking-wide hover:bg-slate-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? 'Opening...' : 'Read Entries'}
-            </button>
+            <div className="group">
+              <label className="block text-sm font-medium text-slate-700 italic transition-colors group-focus-within:text-slate-900">Password</label>
+              <div className="mt-1 relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="appearance-none block w-full px-3 py-2 border-b border-slate-300 bg-transparent placeholder-slate-400 focus:outline-none focus:border-slate-800 transition-colors sm:text-sm pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-700 transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent text-sm font-medium text-[#FDFCF8] bg-slate-800 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 transition-all duration-300 disabled:opacity-70 disabled:cursor-wait hover:-translate-y-0.5 shadow-sm hover:shadow-md"
+              >
+                {isLoading ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Unlocking...</>
+                ) : 'Sign in'}
+              </button>
+            </div>
           </form>
 
-          <div className="mt-8 text-center">
-            <p className="text-slate-500 text-sm">
-              Do not have a journal yet? <Link href="/register" className="text-slate-800 hover:underline italic">Create one here.</Link>
+          <div className="mt-6 text-center relative z-10 pl-6">
+            <p className="text-sm text-slate-500 italic">
+              New to the archives?{' '}
+              <Link href="/register" className="font-medium text-slate-800 hover:text-slate-600 underline decoration-slate-300 underline-offset-4 transition-colors">
+                Create an identity
+              </Link>
             </p>
           </div>
         </div>
